@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-const API_URL = 'http://localhost:3001';
+
+const API_URL = ''; // Временно пустая строка, позже замените на ваш Railway URL
 
 function Detail() {
   const { id } = useParams();
@@ -13,10 +14,8 @@ function Detail() {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [chpStatus, setChpStatus] = useState({});
-  useEffect(() => {
-    loadData();
-  }, [id]);
-  const checkChpStatus = (chpId, currentHouses) => {
+
+  const checkChpStatus = useCallback((chpId, currentHouses) => {
     const chpHouses = currentHouses.filter(house => house.chpId === chpId);
     if (chpHouses.length === 0) {
       return 'working';
@@ -27,8 +26,9 @@ function Detail() {
       return 'off';
     }
     return 'working';
-  };
-  const loadData = async () => {
+  }, []);
+
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [chpsRes, housesRes] = await Promise.all([
@@ -37,6 +37,7 @@ function Detail() {
       ]);
       setChps(chpsRes.data);
       setHouses(housesRes.data);
+
       const statuses = {};
       chpsRes.data.forEach(chp => {
         statuses[chp.id] = checkChpStatus(chp.id, housesRes.data);
@@ -60,28 +61,35 @@ function Detail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, checkChpStatus]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
+
   const updateTemperature = async (newTemp) => {
     if (entityType !== 'house') return;
+    
     let finalTemp = newTemp;
     if (finalTemp < 40) finalTemp = 40;
     if (finalTemp > 95) finalTemp = 95;
+    
     try {
       const updated = { ...entity, temperature: finalTemp };
       await axios.put(`${API_URL}/houses/${entity.id}`, updated);
       setEntity(updated);
-      // Обновляем статусы ТЭЦ
+      
       const updatedHouses = houses.map(h => h.id === entity.id ? updated : h);
       const statuses = {};
       chps.forEach(chp => {
         statuses[chp.id] = checkChpStatus(chp.id, updatedHouses);
       });
       setChpStatus(statuses);
-      // Обновляем список домов
       setHouses(updatedHouses);
       
       if (finalTemp !== newTemp) {
@@ -93,12 +101,14 @@ function Detail() {
       showNotification('Ошибка при изменении температуры', 'error');
     }
   };
+
   const deleteEntity = async () => {
     const confirmMsg = entityType === 'chp'
       ? `Вы уверены, что хотите удалить ${entity.name}? Все подключённые дома также будут удалены.`
       : `Вы уверены, что хотите удалить ${entity.name}?`;
     
     if (!window.confirm(confirmMsg)) return;
+
     try {
       if (entityType === 'chp') {
         const chpHouses = houses.filter(h => h.chpId === entity.id);
@@ -115,12 +125,14 @@ function Detail() {
       showNotification('Ошибка при удалении', 'error');
     }
   };
+
   const getTemperatureStatus = (temp) => {
     if (temp < 40 || temp > 95) return 'broken';
     if (temp < 60) return 'cold';
     if (temp <= 80) return 'normal';
     return 'hot';
   };
+
   const getTemperatureColor = (temp) => {
     const status = getTemperatureStatus(temp);
     switch(status) {
@@ -131,6 +143,7 @@ function Detail() {
       default: return '#718096';
     }
   };
+
   const getPipeColor = (temp, isChpOff = false) => {
     if (isChpOff) return '#000000';
     const status = getTemperatureStatus(temp);
@@ -142,6 +155,7 @@ function Detail() {
       default: return '#718096';
     }
   };
+
   const getTemperatureLabel = (temp) => {
     const status = getTemperatureStatus(temp);
     switch(status) {
@@ -152,20 +166,27 @@ function Detail() {
       default: return 'Неизвестно';
     }
   };
+
   const getTemperatureIcon = (temp) => {
     const status = getTemperatureStatus(temp);
     switch(status) {
-      case 'broken': return 'DEATH';
-      case 'cold': return 'Б-р-р-р';
-      case 'normal': return 'Норм';
-      case 'hot': return 'La-la-la-lava, chi-chi-chiken';
-      default: return 'Ты что натворил...';
+      case 'broken': return '💀';
+      case 'cold': return '❄️';
+      case 'normal': return '🌡️';
+      case 'hot': return '🔥';
+      default: return '❓';
     }
   };
+
   if (loading) return <div className="loading">Загрузка...</div>;
   if (!entity) return <div className="error">Объект не найден</div>;
-  const relatedHouses = entityType === 'chp'? houses.filter(h => h.chpId === entity.id): [];
+
+  const relatedHouses = entityType === 'chp'
+    ? houses.filter(h => h.chpId === entity.id)
+    : [];
+
   const isChpOff = entityType === 'house' ? chpStatus[entity.chpId] === 'off' : chpStatus[entity.id] === 'off';
+
   return (
     <div className="page">
       {notification && (
@@ -173,9 +194,11 @@ function Detail() {
           {notification.message}
         </div>
       )}
+
       <button className="btn btn-primary" onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>
         ← Назад
       </button>
+
       <div className="card">
         <div className="card-header">
           <div className="card-title">
@@ -186,6 +209,7 @@ function Detail() {
             <button className="btn btn-danger" onClick={deleteEntity}>Удалить</button>
           </div>
         </div>
+
         {entityType === 'chp' ? (
           <>
             <p><strong>Мощность:</strong> {entity.capacity} МВт</p>
