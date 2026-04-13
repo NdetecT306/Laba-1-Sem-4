@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-
 const API_URL = '/api';
 
-// Функция для обработки ошибок API
+// Оработки ошибок API
 const handleApiError = (error, showNotification) => {
   if (error.response) {
     const { status, data } = error.response;
@@ -31,8 +30,7 @@ const handleApiError = (error, showNotification) => {
   }
   console.error('API Error:', error);
 };
-
-// Функция для определения позиции ТЭЦ на основе ID
+// Функция для определения позиции ТЭЦ 
 const getChpPosition = (id) => {
   const corners = [
     { x: 750, y: 100 },  // 1: правый верхний
@@ -43,8 +41,7 @@ const getChpPosition = (id) => {
   const positionIndex = (id - 1) % 4;
   return corners[positionIndex];
 };
-
-// Функция для получения позиции дома рядом с ТЭЦ
+// Позиции домов рядом с ТЭЦ
 const getHousePosition = (chp, index) => {
   const chpX = chp.x;
   const chpY = chp.y;
@@ -64,8 +61,7 @@ const getHousePosition = (chp, index) => {
   }
   return { x: chpX + offsetX, y: chpY + offsetY };
 };
-
-// Функция для получения следующего доступного ID (вынесена из цикла)
+// Функция для получения следующего доступного ID 
 const getNextAvailableId = (existingIds) => {
   let nextId = 1;
   while (existingIds.includes(nextId)) {
@@ -73,7 +69,6 @@ const getNextAvailableId = (existingIds) => {
   }
   return nextId;
 };
-
 function Form() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -94,7 +89,6 @@ function Form() {
     location: ''
   });
   const [errors, setErrors] = useState({});
-  
   const loadData = useCallback(async () => {
     try {
       const [chpsRes, housesRes] = await Promise.all([
@@ -146,16 +140,13 @@ function Form() {
       setLoading(false);
     }
   }, [id, formData.chpId]);
-
   useEffect(() => {
     loadData();
   }, [loadData]);
-
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 5000);
   };
-
   const validateForm = () => {
     const newErrors = {};
     // Валидация имени
@@ -192,7 +183,6 @@ function Form() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleTypeChange = (type) => {
     if (isEditMode) return;
     setEntityType(type);
@@ -206,7 +196,6 @@ function Form() {
     });
     setErrors({});
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newValue = name === 'capacity' || name === 'temperature' || name === 'chpId' ? Number(value) : value;
@@ -223,8 +212,7 @@ function Form() {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-
-  // Проверка уникальности имени (исключая текущий объект при редактировании)
+  // Проверка уникальности имени 
   const isNameUnique = (name, type, excludeId = null) => {
     const allChpNames = chps.map(c => c.name.toLowerCase());
     const allHouseNames = houses.map(h => h.name.toLowerCase());
@@ -246,7 +234,6 @@ function Form() {
       return !allHouseNames.includes(name.toLowerCase());
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -318,8 +305,6 @@ function Form() {
             setSubmitting(false);
             return;
           }
-          
-          // Используем вынесенную функцию для получения следующего ID
           const existingIds = chps.map(chp => chp.id);
           const nextId = getNextAvailableId(existingIds);
           
@@ -372,9 +357,7 @@ function Form() {
       setSubmitting(false);
     }
   };
-  
   if (loading) return <div className="loading">Загрузка...</div>;
-
   return (
     <div className="page">
       {notification && (
@@ -385,7 +368,6 @@ function Form() {
       <button className="btn btn-primary" onClick={() => navigate('/')} style={{ marginBottom: '1rem' }}>
         ← Назад
       </button>
-
       <div className="card">
         <h2>{isEditMode ? 'Редактирование объекта' : '+ Добавление объекта'}</h2>
         
@@ -405,7 +387,6 @@ function Form() {
             </button>
           </div>
         )}
-
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Название *</label>
@@ -421,7 +402,6 @@ function Form() {
             {errors.name && <div className="error-message">{errors.name}</div>}
             <small style={{ color: '#718096' }}>Название должно быть уникальным (2-50 символов)</small>
           </div>
-
           {entityType === 'chp' ? (
             <>
               <div className="form-group">
@@ -509,7 +489,6 @@ function Form() {
               </div>
             </>
           )}
-
           <button
             type="submit"
             className="btn btn-success"
