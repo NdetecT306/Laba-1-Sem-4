@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
-const API_URL = ''; // Временно пустая строка, позже замените на ваш Railway URL
+const API_URL = '/api'; 
 
 // Функция для определения позиции ТЭЦ на основе ID (1-4)
 const getChpPosition = (id, totalChps) => {
