@@ -1,20 +1,16 @@
 const express = require('express');
 const path = require('path');
-const jsonServer = require('json-server');
-
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Middleware для JSON Server
-const router = jsonServer.router('db.json');
-const middlewares = jsonServer.defaults();
-
-// Подключаем JSON Server к пути /api
-app.use('/api', middlewares);
-app.use('/api', router);
-
-// Отдаем статические файлы React (фронтенд)
+// Раздаем статические файлы React
 app.use(express.static(path.join(__dirname, 'build')));
+
+// Обработка API запросов (если у вас есть json-server)
+// Если нет - можно добавить простой API для теста
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API работает!' });
+});
 
 // Все остальные запросы отдаем index.html (для React Router)
 app.get('*', (req, res) => {
@@ -22,7 +18,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Сервер запущен на порту ${PORT}`);
-  console.log(`Фронтенд доступен по адресу http://localhost:${PORT}`);
-  console.log(`API доступно по адресу http://localhost:${PORT}/api`);
+  console.log(`Server running on port ${PORT}`);
 });
