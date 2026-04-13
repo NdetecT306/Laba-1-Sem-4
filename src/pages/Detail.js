@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
 const API_URL = '/api';
-
 function Detail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -14,7 +12,6 @@ function Detail() {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [chpStatus, setChpStatus] = useState({});
-
   const checkChpStatus = useCallback((chpId, currentHouses) => {
     const chpHouses = currentHouses.filter(house => house.chpId === chpId);
     if (chpHouses.length === 0) {
@@ -27,7 +24,6 @@ function Detail() {
     }
     return 'working';
   }, []);
-
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -37,13 +33,11 @@ function Detail() {
       ]);
       setChps(chpsRes.data);
       setHouses(housesRes.data);
-
       const statuses = {};
       chpsRes.data.forEach(chp => {
         statuses[chp.id] = checkChpStatus(chp.id, housesRes.data);
       });
       setChpStatus(statuses);
-
       const parsedId = parseInt(id);
       const foundChp = chpsRes.data.find(c => c.id === parsedId);
       if (foundChp) {
@@ -62,28 +56,22 @@ function Detail() {
       setLoading(false);
     }
   }, [id, checkChpStatus]);
-
   useEffect(() => {
     loadData();
   }, [loadData]);
-
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
-
   const updateTemperature = async (newTemp) => {
     if (entityType !== 'house') return;
-    
     let finalTemp = newTemp;
     if (finalTemp < 40) finalTemp = 40;
     if (finalTemp > 95) finalTemp = 95;
-    
     try {
       const updated = { ...entity, temperature: finalTemp };
       await axios.put(`${API_URL}/houses/${entity.id}`, updated);
       setEntity(updated);
-      
       const updatedHouses = houses.map(h => h.id === entity.id ? updated : h);
       const statuses = {};
       chps.forEach(chp => {
@@ -91,7 +79,6 @@ function Detail() {
       });
       setChpStatus(statuses);
       setHouses(updatedHouses);
-      
       if (finalTemp !== newTemp) {
         showNotification(`Температура ограничена ${finalTemp}°C (допустимый диапазон 40-95°C)`);
       } else {
@@ -101,14 +88,9 @@ function Detail() {
       showNotification('Ошибка при изменении температуры', 'error');
     }
   };
-
   const deleteEntity = async () => {
-    const confirmMsg = entityType === 'chp'
-      ? `Вы уверены, что хотите удалить ${entity.name}? Все подключённые дома также будут удалены.`
-      : `Вы уверены, что хотите удалить ${entity.name}?`;
-    
+    const confirmMsg = entityType === 'chp'? `Вы уверены, что хотите удалить ${entity.name}? Все подключённые дома также будут удалены.`: `Вы уверены, что хотите удалить ${entity.name}?`;
     if (!window.confirm(confirmMsg)) return;
-
     try {
       if (entityType === 'chp') {
         const chpHouses = houses.filter(h => h.chpId === entity.id);
@@ -125,14 +107,12 @@ function Detail() {
       showNotification('Ошибка при удалении', 'error');
     }
   };
-
   const getTemperatureStatus = (temp) => {
     if (temp < 40 || temp > 95) return 'broken';
     if (temp < 60) return 'cold';
     if (temp <= 80) return 'normal';
     return 'hot';
   };
-
   const getTemperatureColor = (temp) => {
     const status = getTemperatureStatus(temp);
     switch(status) {
@@ -143,7 +123,6 @@ function Detail() {
       default: return '#718096';
     }
   };
-
   const getPipeColor = (temp, isChpOff = false) => {
     if (isChpOff) return '#000000';
     const status = getTemperatureStatus(temp);
@@ -155,7 +134,6 @@ function Detail() {
       default: return '#718096';
     }
   };
-
   const getTemperatureLabel = (temp) => {
     const status = getTemperatureStatus(temp);
     switch(status) {
@@ -166,27 +144,20 @@ function Detail() {
       default: return 'Неизвестно';
     }
   };
-
   const getTemperatureIcon = (temp) => {
     const status = getTemperatureStatus(temp);
     switch(status) {
-      case 'broken': return '💀';
-      case 'cold': return '❄️';
-      case 'normal': return '🌡️';
-      case 'hot': return '🔥';
-      default: return '❓';
+      case 'broken': return 'DEATH';
+      case 'cold': return 'Б-р-р-р';
+      case 'normal': return 'Норма';
+      case 'hot': return 'La-la-lava';
+      default: return 'Ты что наделал...';
     }
   };
-
   if (loading) return <div className="loading">Загрузка...</div>;
   if (!entity) return <div className="error">Объект не найден</div>;
-
-  const relatedHouses = entityType === 'chp'
-    ? houses.filter(h => h.chpId === entity.id)
-    : [];
-
+  const relatedHouses = entityType === 'chp'? houses.filter(h => h.chpId === entity.id): [];
   const isChpOff = entityType === 'house' ? chpStatus[entity.chpId] === 'off' : chpStatus[entity.id] === 'off';
-
   return (
     <div className="page">
       {notification && (
@@ -194,11 +165,9 @@ function Detail() {
           {notification.message}
         </div>
       )}
-
       <button className="btn btn-primary" onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>
         ← Назад
       </button>
-
       <div className="card">
         <div className="card-header">
           <div className="card-title">
@@ -209,7 +178,6 @@ function Detail() {
             <button className="btn btn-danger" onClick={deleteEntity}>Удалить</button>
           </div>
         </div>
-
         {entityType === 'chp' ? (
           <>
             <p><strong>Мощность:</strong> {entity.capacity} МВт</p>
@@ -269,7 +237,6 @@ function Detail() {
               }}>
                 {getTemperatureIcon(entity.temperature)} {entity.temperature}°C
               </div>
-              
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button className="btn btn-warning" onClick={() => updateTemperature(entity.temperature - 5)}>
                   -5°C
@@ -289,7 +256,6 @@ function Detail() {
                 Допустимый диапазон: 40°C - 95°C
               </div>
             </div>
-
             <div style={{ marginTop: '1rem', padding: '1rem', background: '#e2e8f0', borderRadius: '10px' }}>
               <p><strong>Влияние на систему отопления:</strong></p>
               <div style={{
