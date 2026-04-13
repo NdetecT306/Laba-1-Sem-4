@@ -65,6 +65,15 @@ const getHousePosition = (chp, index) => {
   return { x: chpX + offsetX, y: chpY + offsetY };
 };
 
+// Функция для получения следующего доступного ID (вынесена из цикла)
+const getNextAvailableId = (existingIds) => {
+  let nextId = 1;
+  while (existingIds.includes(nextId)) {
+    nextId++;
+  }
+  return nextId;
+};
+
 function Form() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -310,11 +319,9 @@ function Form() {
             return;
           }
           
-          // Вычисляем следующий доступный ID
-          let nextId = 1;
-          while (chps.some(chp => chp.id === nextId)) {
-            nextId++;
-          }
+          // Используем вынесенную функцию для получения следующего ID
+          const existingIds = chps.map(chp => chp.id);
+          const nextId = getNextAvailableId(existingIds);
           
           const position = getChpPosition(nextId);
           const newChp = {
