@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = ''; // Временно пустая строка, позже замените на ваш Railway URL
+const API_URL = '/api';
 
 function Detail() {
   const { id } = useParams();
