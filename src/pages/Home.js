@@ -2,10 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-
 const API_URL = '/api'; 
 
-// Функция для определения позиции ТЭЦ на основе ID (1-4)
+// Функция для определения позиции ТЭЦ 
 const getChpPosition = (id, totalChps) => {
   const corners = [
     { x: 750, y: 100 },  // 1: правый верхний
@@ -16,36 +15,26 @@ const getChpPosition = (id, totalChps) => {
   const positionIndex = (id - 1) % 4;
   return corners[positionIndex];
 };
-
-// Функция для получения позиции дома рядом с его ТЭЦ (с увеличенным расстоянием)
+// Функция для получения позиции дома рядом с его ТЭЦ 
 const getHousePosition = (chp, index, totalHousesForChp) => {
   const chpX = chp.x;
   const chpY = chp.y;
-  
   let offsetX, offsetY;
-  
-  // Увеличил расстояние между домами
   if (chpX === 750 && chpY === 100) {
-    // ТЭЦ в правом верхнем углу - дома будут слева от ТЭЦ
-    offsetX = -120;  // Увеличено отступление от ТЭЦ
-    offsetY = 20 + (index * 80);  // Увеличен шаг между домами с 50 до 80
+    offsetX = -120;  
+    offsetY = 20 + (index * 80);  
   } else if (chpX === 750 && chpY === 550) {
-    // ТЭЦ в правом нижнем углу - дома будут слева от ТЭЦ
-    offsetX = -120;  // Увеличено отступление от ТЭЦ
-    offsetY = -20 - (index * 80);  // Увеличен шаг между домами с 50 до 80
+    offsetX = -120;  
+    offsetY = -20 - (index * 80);  
   } else if (chpX === 100 && chpY === 550) {
-    // ТЭЦ в левом нижнем углу - дома будут справа от ТЭЦ
-    offsetX = 120;  // Увеличено отступление от ТЭЦ
-    offsetY = -20 - (index * 80);  // Увеличен шаг между домами с 50 до 80
+    offsetX = 120;  
+    offsetY = -20 - (index * 80); 
   } else {
-    // ТЭЦ в левом верхнем углу - дома будут справа от ТЭЦ
-    offsetX = 120;  // Увеличено отступление от ТЭЦ
-    offsetY = 20 + (index * 80);  // Увеличен шаг между домами с 50 до 80
+    offsetX = 120; 
+    offsetY = 20 + (index * 80); 
   }
-  
   return { x: chpX + offsetX, y: chpY + offsetY };
 };
-
 function Home() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -59,24 +48,18 @@ function Home() {
   const [filterType, setFilterType] = useState('all');
   const [viewMode, setViewMode] = useState('list');
   const [chpStatus, setChpStatus] = useState({});
-
   const checkChpStatus = useCallback((chpId, currentHouses) => {
     const chpHouses = currentHouses.filter(house => house.chpId === chpId);
-    
     if (chpHouses.length === 0) {
       return 'working';
     }
-    
     const allAtMax = chpHouses.every(house => house.temperature === 95);
     const allAtMin = chpHouses.every(house => house.temperature === 40);
-    
     if (allAtMax || allAtMin) {
       return 'off';
     }
-    
     return 'working';
   }, []);
-
   const updateAllChpStatuses = useCallback((currentChps, currentHouses) => {
     const newStatuses = {};
     currentChps.forEach(chp => {
@@ -85,12 +68,10 @@ function Home() {
     setChpStatus(newStatuses);
     return newStatuses;
   }, [checkChpStatus]);
-
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
-
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -98,7 +79,6 @@ function Home() {
         axios.get(`${API_URL}/chps`),
         axios.get(`${API_URL}/houses`)
       ]);
-      
       const chpsWithPositions = chpsRes.data.map(chp => {
         const position = getChpPosition(chp.id, chpsRes.data.length);
         if (chp.x !== position.x || chp.y !== position.y) {
@@ -107,7 +87,6 @@ function Home() {
         }
         return { ...chp, x: position.x, y: position.y };
       });
-      
       const updatedHouses = housesRes.data.map(house => {
         const chp = chpsWithPositions.find(c => c.id === house.chpId);
         if (chp) {
@@ -122,16 +101,13 @@ function Home() {
         }
         return house;
       });
-      
       setChps(chpsWithPositions);
       setHouses(updatedHouses);
-      
       const statuses = {};
       chpsWithPositions.forEach(chp => {
         statuses[chp.id] = checkChpStatus(chp.id, updatedHouses);
       });
       setChpStatus(statuses);
-      
       setError(null);
     } catch (err) {
       setError('Ошибка загрузки данных. Убедитесь, что JSON Server запущен.');
@@ -140,11 +116,9 @@ function Home() {
       setLoading(false);
     }
   }, [checkChpStatus]);
-
   useEffect(() => {
     loadData();
   }, [loadData]);
-
   const deleteChp = async (id, e) => {
     e.stopPropagation();
     const chpHouses = houses.filter(house => house.chpId === id);
@@ -155,7 +129,6 @@ function Home() {
     try {
       await axios.delete(`${API_URL}/chps/${id}`);
       const newChps = chps.filter(chp => chp.id !== id);
-      
       const renumberedChps = newChps.sort((a, b) => a.id - b.id).map((chp, index) => {
         const newId = index + 1;
         if (chp.id !== newId) {
@@ -169,21 +142,17 @@ function Home() {
         }
         return chp;
       });
-      
       const chpsWithNewPositions = renumberedChps.map(chp => {
         const position = getChpPosition(chp.id, renumberedChps.length);
         return { ...chp, x: position.x, y: position.y };
       });
-      
       setChps(chpsWithNewPositions);
-      
       const updatedHouses = houses.map(house => {
         const newChpId = renumberedChps.find(chp => chp.oldId === house.chpId)?.id || house.chpId;
         return { ...house, chpId: newChpId };
       });
       setHouses(updatedHouses);
       updateAllChpStatuses(chpsWithNewPositions, updatedHouses);
-      
       if (selectedObject?.id === id && selectedType === 'chp') {
         setViewMode('list');
         setSelectedObject(null);
@@ -194,7 +163,6 @@ function Home() {
       showNotification('Ошибка при удалении ТЭЦ', 'error');
     }
   };
-
   const deleteHouse = async (id, e) => {
     e.stopPropagation();
     try {
@@ -202,7 +170,6 @@ function Home() {
       const newHouses = houses.filter(house => house.id !== id);
       setHouses(newHouses);
       updateAllChpStatuses(chps, newHouses);
-      
       if (selectedObject?.id === id && selectedType === 'house') {
         setViewMode('list');
         setSelectedObject(null);
@@ -214,7 +181,7 @@ function Home() {
     }
   };
 
-  // Функция для редактирования объекта
+  // Редактирование 
   const handleEdit = (e) => {
     e.stopPropagation();
     if (selectedType === 'chp') {
@@ -223,31 +190,24 @@ function Home() {
       navigate(`/edit/${selectedObject.id}`);
     }
   };
-
   const updateTemperature = async (newTemp) => {
     if (selectedType !== 'house' || !selectedObject) return;
-    
     let finalTemp = newTemp;
     if (finalTemp < 40) finalTemp = 40;
     if (finalTemp > 95) finalTemp = 95;
-    
     try {
       const updated = { ...selectedObject, temperature: finalTemp };
       await axios.put(`${API_URL}/houses/${selectedObject.id}`, updated);
-      
       const newHouses = houses.map(h => h.id === selectedObject.id ? updated : h);
       setHouses(newHouses);
       setSelectedObject(updated);
-      
       const newStatuses = updateAllChpStatuses(chps, newHouses);
-      
       const affectedChp = chps.find(c => c.id === selectedObject.chpId);
       if (affectedChp && newStatuses[affectedChp.id] === 'off') {
-        showNotification(`⚠️ ТЭЦ "${affectedChp.name}" ОТКЛЮЧЕНА! Все дома на ${finalTemp === 95 ? 'максимальной' : 'минимальной'} температуре!`, 'error');
+        showNotification(`ТЭЦ "${affectedChp.name}" ОТКЛЮЧЕНА! Все дома на ${finalTemp === 95 ? 'максимальной' : 'минимальной'} температуре!`, 'error');
       } else if (affectedChp && newStatuses[affectedChp.id] === 'working' && chpStatus[affectedChp.id] === 'off') {
-        showNotification(`✅ ТЭЦ "${affectedChp.name}" восстановлена!`, 'success');
+        showNotification(`ТЭЦ "${affectedChp.name}" восстановлена!`, 'success');
       }
-      
       if (finalTemp !== newTemp) {
         showNotification(`Температура ограничена ${finalTemp}°C (допустимый диапазон 40-95°C)`);
       } else {
@@ -257,28 +217,23 @@ function Home() {
       showNotification('Ошибка при изменении температуры', 'error');
     }
   };
-
   const getChpHouses = (chpId) => houses.filter(house => house.chpId === chpId);
-
   const handleObjectClick = (obj, type) => {
     setSelectedObject(obj);
     setSelectedType(type);
     setViewMode('detail');
   };
-
   const handleBackToList = () => {
     setViewMode('list');
     setSelectedObject(null);
     setSelectedType(null);
   };
-
   const getTemperatureStatus = (temp) => {
     if (temp < 40 || temp > 95) return 'broken';
     if (temp < 60) return 'cold';
     if (temp <= 80) return 'normal';
     return 'hot';
   };
-
   const getTemperatureColor = (temp) => {
     const status = getTemperatureStatus(temp);
     switch(status) {
@@ -289,7 +244,6 @@ function Home() {
       default: return '#718096';
     }
   };
-
   const getPipeColor = (temp, isChpOff = false) => {
     if (isChpOff) return '#000000';
     const status = getTemperatureStatus(temp);
@@ -301,7 +255,6 @@ function Home() {
       default: return '#718096';
     }
   };
-
   const getTemperatureLabel = (temp) => {
     const status = getTemperatureStatus(temp);
     switch(status) {
@@ -312,24 +265,20 @@ function Home() {
       default: return 'Неизвестно';
     }
   };
-
   const getTemperatureIcon = (temp) => {
     const status = getTemperatureStatus(temp);
     switch(status) {
-      case 'broken': return '💀';
-      case 'cold': return '❄️';
-      case 'normal': return '🌡️';
-      case 'hot': return '🔥';
-      default: return '❓';
+      case 'broken': return 'DEATH';
+      case 'cold': return 'Б-р-р-р';
+      case 'normal': return 'Норма';
+      case 'hot': return 'La-la-lava';
+      default: return 'Ты что наделал...';
     }
   };
-
   const filteredChps = filterType === 'all' || filterType === 'chp' ? chps : [];
   const filteredHouses = filterType === 'all' || filterType === 'house' ? houses : [];
-
   if (loading) return <div className="loading">Загрузка...</div>;
   if (error) return <div className="error">{error}</div>;
-
   return (
     <div className="home-container">
       {notification && (
@@ -337,25 +286,23 @@ function Home() {
           {notification.message}
         </div>
       )}
-
       <div className="left-panel">
         {viewMode === 'list' ? (
           <>
             <div className="panel-header">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h1>📋 Управление инфраструктурой</h1>
+                <h1>Управление инфраструктурой</h1>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>👤 {user?.username}</span>
+                  <span style={{ fontSize: '0.9rem', opacity: 0.9 }}> {user?.username}</span>
                   <button className="btn btn-secondary small" onClick={logout}>
-                    🚪 Выйти
+                    Выйти
                   </button>
                 </div>
               </div>
               <button className="btn btn-success add-btn" onClick={() => navigate('/add')}>
-                ➕ Добавить объект
+                + Добавить объект
               </button>
             </div>
-
             <div className="filter-buttons">
               <button 
                 className={`filter-btn ${filterType === 'all' ? 'active' : ''}`}
@@ -367,13 +314,13 @@ function Home() {
                 className={`filter-btn ${filterType === 'chp' ? 'active' : ''}`}
                 onClick={() => setFilterType('chp')}
               >
-                🏭 ТЭЦ
+                ТЭЦ
               </button>
               <button 
                 className={`filter-btn ${filterType === 'house' ? 'active' : ''}`}
                 onClick={() => setFilterType('house')}
               >
-                🏠 Дома
+                Дома
               </button>
             </div>
 
@@ -397,7 +344,7 @@ function Home() {
                       <div className="list-item-title">
                         <img src="/TEC.jpeg" alt="ТЭЦ" className="list-icon" />
                         {chp.name}
-                        {isOff && <span style={{ color: '#f56565', marginLeft: '8px' }}>⚠️ ОТКЛЮЧЕНА</span>}
+                        {isOff && <span style={{ color: '#f56565', marginLeft: '8px' }}>ОТКЛЮЧЕНА</span>}
                       </div>
                       <div>
                         <button 
@@ -408,20 +355,19 @@ function Home() {
                             navigate(`/edit/${chp.id}`);
                           }}
                         >
-                          ✏️
+                          
                         </button>
                         <button className="btn btn-danger small" onClick={(e) => deleteChp(chp.id, e)}>✕</button>
                       </div>
                     </div>
                     <div className="list-item-info">
-                      <span>⚡ {chp.capacity} МВт</span>
-                      <span>📍 {chp.location}</span>
-                      <span>🏠 {getChpHouses(chp.id).length} домов</span>
+                      <span> {chp.capacity} МВт</span>
+                      <span> {chp.location}</span>
+                      <span> {getChpHouses(chp.id).length} домов</span>
                     </div>
                   </div>
                 );
               })}
-              
               {filteredHouses.map(house => {
                 const chp = chps.find(c => c.id === house.chpId);
                 const isChpOff = chp && chpStatus[chp.id] === 'off';
@@ -439,7 +385,7 @@ function Home() {
                           className="list-icon"
                         />
                         {house.name}
-                        {isChpOff && <span style={{ color: '#f56565', marginLeft: '8px' }}>⚠️ ТЭЦ отключена</span>}
+                        {isChpOff && <span style={{ color: '#f56565', marginLeft: '8px' }}>ТЭЦ отключена</span>}
                       </div>
                       <div>
                         <button 
@@ -450,14 +396,14 @@ function Home() {
                             navigate(`/edit/${house.id}`);
                           }}
                         >
-                          ✏️
+                          
                         </button>
                         <button className="btn btn-danger small" onClick={(e) => deleteHouse(house.id, e)}>✕</button>
                       </div>
                     </div>
                     <div className="list-item-info">
-                      <span>{house.type === 'apartment' ? '🏢 Многоквартирный' : '🏠 Частный'}</span>
-                      <span>🔌 {chp?.name || 'Не указана'}</span>
+                      <span>{house.type === 'apartment' ? ' Многоквартирный' : ' Частный'}</span>
+                      <span> {chp?.name || 'Не указана'}</span>
                       <span style={{ color: getTemperatureColor(house.temperature), fontWeight: 'bold' }}>
                         {getTemperatureIcon(house.temperature)} {house.temperature}°C
                       </span>
@@ -479,7 +425,7 @@ function Home() {
                   style={{ marginRight: '10px' }}
                   onClick={handleEdit}
                 >
-                  ✏️ Редактировать
+                   Редактировать
                 </button>
                 <button 
                   className="btn btn-danger"
@@ -491,11 +437,10 @@ function Home() {
                     }
                   }}
                 >
-                  🗑️ Удалить
+                   Удалить
                 </button>
               </div>
             </div>
-
             <div className="detail-content">
               {selectedType === 'chp' ? (
                 <>
@@ -519,31 +464,15 @@ function Home() {
                       <div className="stat-label">подключено домов</div>
                     </div>
                   </div>
-
-                  <div className="detail-info-section">
-                    <div className="info-row">
-                      <span className="info-label">📍 Расположение:</span>
-                      <span className="info-value">{selectedObject.location}</span>
-                    </div>
                     <div className="info-row">
                       <span className="info-label">📊 Статус:</span>
                       <span className="info-value" style={{ color: chpStatus[selectedObject.id] === 'off' ? '#f56565' : '#48bb78', fontWeight: 'bold' }}>
-                        {chpStatus[selectedObject.id] === 'off' ? '❌ ОТКЛЮЧЕНА' : '✅ РАБОТАЕТ'}
-                      </span>
-                    </div>
-                    <div className="info-row">
-                      <span className="info-label">📍 Позиция на схеме:</span>
-                      <span className="info-value">
-                        {selectedObject.id === 1 && 'Правый верхний угол'}
-                        {selectedObject.id === 2 && 'Правый нижний угол'}
-                        {selectedObject.id === 3 && 'Левый нижний угол'}
-                        {selectedObject.id === 4 && 'Левый верхний угол'}
+                        {chpStatus[selectedObject.id] === 'off' ? 'ОТКЛЮЧЕНА' : 'РАБОТАЕТ'}
                       </span>
                     </div>
                   </div>
-
                   <div className="detail-houses">
-                    <h3>🏘️ Подключённые дома</h3>
+                    <h3> Подключённые дома</h3>
                     <div className="houses-list">
                       {getChpHouses(selectedObject.id).map(house => {
                         const isChpOff = chpStatus[selectedObject.id] === 'off';
@@ -563,7 +492,7 @@ function Home() {
                             <div className="house-info">
                               <div className="house-name">{house.name}</div>
                               <div className="house-temp" style={{ color: isChpOff ? '#000000' : getTemperatureColor(house.temperature), fontWeight: 'bold' }}>
-                                {isChpOff ? '💀 ТЭЦ отключена' : `${getTemperatureIcon(house.temperature)} ${house.temperature}°C`}
+                                {isChpOff ? 'ТЭЦ отключена' : `${getTemperatureIcon(house.temperature)} ${house.temperature}°C`}
                               </div>
                             </div>
                           </div>
@@ -623,45 +552,43 @@ function Home() {
                         />
                       </div>
                     </div>
-
                     <div className="temperature-buttons">
                       <button className="temp-btn" onClick={() => updateTemperature(selectedObject.temperature - 5)}>
-                        ❄️ -5°
+                         -5°
                       </button>
                       <button className="temp-btn" onClick={() => updateTemperature(selectedObject.temperature - 1)}>
                         -1°
                       </button>
                       <button className="temp-btn temp-reset" onClick={() => updateTemperature(60)}>
-                        🌡️ 60° (норма)
+                         60° (норма)
                       </button>
                       <button className="temp-btn" onClick={() => updateTemperature(selectedObject.temperature + 1)}>
                         +1°
                       </button>
                       <button className="temp-btn" onClick={() => updateTemperature(selectedObject.temperature + 5)}>
-                        🔥 +5°
+                         +5°
                       </button>
                     </div>
                     <div className="info-row" style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#718096' }}>
                       <span>Допустимый диапазон: 40°C - 95°C</span>
                     </div>
                   </div>
-
                   <div className="detail-info-section">
                     <div className="info-row">
-                      <span className="info-label">🏭 ТЭЦ:</span>
+                      <span className="info-label">ТЭЦ:</span>
                       <span className="info-value" style={{ color: chpStatus[selectedObject.chpId] === 'off' ? '#f56565' : 'inherit' }}>
                         {chps.find(c => c.id === selectedObject.chpId)?.name || 'Не указана'}
                         {chpStatus[selectedObject.chpId] === 'off' && ' (ОТКЛЮЧЕНА)'}
                       </span>
                     </div>
                     <div className="info-row">
-                      <span className="info-label">🏠 Тип:</span>
+                      <span className="info-label">Тип:</span>
                       <span className="info-value">
                         {selectedObject.type === 'apartment' ? 'Многоквартирный дом' : 'Частный дом'}
                       </span>
                     </div>
                     <div className="info-row">
-                      <span className="info-label">📊 Нагрузка на систему:</span>
+                      <span className="info-label">Нагрузка на систему:</span>
                       <span className="info-value" style={{ color: getTemperatureColor(selectedObject.temperature), fontWeight: 'bold' }}>
                         {getTemperatureLabel(selectedObject.temperature)}
                       </span>
@@ -669,7 +596,7 @@ function Home() {
                   </div>
 
                   <div className="pipe-visualization">
-                    <div className="pipe-label">🔧 Состояние трубы</div>
+                    <div className="pipe-label">Состояние трубы</div>
                     <div className="pipe">
                       <div 
                         className="pipe-water"
@@ -684,10 +611,10 @@ function Home() {
                       </div>
                     </div>
                     <div className="pipe-indicator" style={{ color: chpStatus[selectedObject.chpId] === 'off' ? '#000000' : getPipeColor(selectedObject.temperature), fontWeight: 'bold' }}>
-                      {chpStatus[selectedObject.chpId] === 'off' ? '💀 ТЭЦ ОТКЛЮЧЕНА - ТРЕБУЕТСЯ РЕМОНТ!' :
-                       getTemperatureStatus(selectedObject.temperature) === 'broken' ? '💀 ТРЕБУЕТСЯ РЕМОНТ!' :
-                       getTemperatureStatus(selectedObject.temperature) === 'cold' ? '❄️ Холодная вода' : 
-                       getTemperatureStatus(selectedObject.temperature) === 'normal' ? '🌡️ Тёплая вода' : '🔥 Горячая вода'}
+                      {chpStatus[selectedObject.chpId] === 'off' ? 'ТЭЦ ОТКЛЮЧЕНА - ТРЕБУЕТСЯ РЕМОНТ!' :
+                       getTemperatureStatus(selectedObject.temperature) === 'broken' ? 'ТРЕБУЕТСЯ РЕМОНТ!' :
+                       getTemperatureStatus(selectedObject.temperature) === 'cold' ? 'Холодная вода' : 
+                       getTemperatureStatus(selectedObject.temperature) === 'normal' ? 'Тёплая вода' : 'Горячая вода'}
                     </div>
                   </div>
                 </>
@@ -699,7 +626,7 @@ function Home() {
 
       <div className="right-panel">
         <div className="schema-header">
-          <h2>🗺️ Схема инфраструктуры</h2>
+          <h2>Схема инфраструктуры</h2>
         </div>
         <div className="schema-container">
           <svg className="schema-canvas" viewBox="0 0 900 700">
@@ -729,9 +656,6 @@ function Home() {
               const x = chp.x;
               const y = chp.y;
               const isOff = chpStatus[chp.id] === 'off';
-              
-              const cornerIcon = chp.id === 1 ? '↗️' : chp.id === 2 ? '↘️' : chp.id === 3 ? '↙️' : '↖️';
-              
               return (
                 <g 
                   key={`chp-svg-${chp.id}`} 
@@ -768,7 +692,7 @@ function Home() {
                     </div>
                   </foreignObject>
                   <text x={x + 25} y={y + 65} textAnchor="middle" fill={isOff ? '#f56565' : 'white'} fontSize="10" fontWeight="bold">
-                    {chp.name} {cornerIcon}
+                    {chp.name} 
                   </text>
                 </g>
               );
@@ -782,7 +706,6 @@ function Home() {
               const isChpOff = chp && chpStatus[chp.id] === 'off';
               const status = getTemperatureStatus(house.temperature);
               const borderColor = isChpOff ? '#000000' : (status === 'broken' ? '#000000' : getPipeColor(house.temperature));
-              
               return (
                 <g 
                   key={`house-svg-${house.id}`} 
