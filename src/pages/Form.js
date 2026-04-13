@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001';
+const API_URL = ''; // Временно пустая строка, позже замените на ваш Railway URL
 
 // Функция для обработки ошибок API
 const handleApiError = (error, showNotification) => {
@@ -86,11 +86,7 @@ function Form() {
   });
   const [errors, setErrors] = useState({});
   
-  useEffect(() => {
-    loadData();
-  }, [id]);
-  
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [chpsRes, housesRes] = await Promise.all([
         axios.get(`${API_URL}/chps`),
@@ -140,7 +136,11 @@ function Form() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, formData.chpId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -309,6 +309,8 @@ function Form() {
             setSubmitting(false);
             return;
           }
+          
+          // Вычисляем следующий доступный ID
           let nextId = 1;
           while (chps.some(chp => chp.id === nextId)) {
             nextId++;
