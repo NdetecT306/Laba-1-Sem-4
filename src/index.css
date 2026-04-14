@@ -5,7 +5,7 @@
 }
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #c1b7fa;
   min-height: 100vh;
 }
 /* Двухпанельный макет */
@@ -193,9 +193,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  background: #AAF0D1;
 }
 .schema-canvas {
-  background: #16213e;
+  background: #AAF0D1;
   border-radius: 10px;
   width: 100%;
   height: auto;
@@ -422,7 +423,6 @@ body {
     min-height: 50vh;
   }
 }
-/* Детальная панель */
 .detail-panel {
   height: 100%;
   display: flex;
@@ -664,7 +664,6 @@ body {
   padding: 2rem;
   color: #718096;
 }
-/* Стили для изображений в списке */
 .list-icon {
   width: 24px;
   height: 24px;
@@ -677,7 +676,6 @@ body {
   display: flex;
   align-items: center;
 }
-/* Стили для детального изображения */
 .detail-object-image {
   width: 120px;
   height: 120px;
@@ -694,7 +692,6 @@ foreignObject {
 .schema-canvas g {
   cursor: pointer;
 }
-/* Стили для поломки */
 .broken-status {
   color: #000000;
   font-weight: bold;
@@ -731,7 +728,6 @@ foreignObject {
   font-size: 0.8rem;
   margin-top: 0.25rem;
 }
-/* Стили для аутентификации */
 .auth-container {
   min-height: 100vh;
   display: flex;
@@ -798,4 +794,37 @@ foreignObject {
 .auth-switch-btn:hover {
   color: #5a67d8;
   text-decoration: underline;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: fadeIn 0.3s ease-out;
+}
+.modal-content h2 {
+  margin-bottom: 1.5rem;
+  color: #2d3748;
+  text-align: center;
+}
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
 }
