@@ -381,14 +381,19 @@ body {
   animation: slideIn 0.3s ease-out;
 }
 @keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 .notification-success {
   border-left: 4px solid #48bb78;
 }
 .notification-error {
   border-left: 4px solid #f56565;
+}
+.notification-warning {
+  border-left: 4px solid #ed8936;
+  background-color: #fffaf0;
+  color: #c05621;
 }
 .loading {
   text-align: center;
@@ -525,16 +530,6 @@ body {
 .temperature-bar-container {
   margin-bottom: 1rem;
 }
-.temperature-bar {
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.temperature-fill {
-  height: 100%;
-  transition: width 0.3s;
-}
 .temperature-buttons {
   display: flex;
   gap: 0.5rem;
@@ -594,6 +589,11 @@ body {
   transform: translateX(5px);
 }
 .house-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.5rem;
 }
 .house-info {
@@ -612,6 +612,12 @@ body {
   text-align: center;
   padding: 1rem;
   color: #718096;
+}
+.house-mini-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 /* Визуализация трубы */
 .pipe-visualization {
@@ -680,39 +686,13 @@ body {
   border: 3px solid #667eea;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-/* Мини-изображения в списке домов */
-.house-mini-image {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-.house-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 /* Стили для SVG foreignObject */
 foreignObject {
   pointer-events: bounding-box;
 }
 /* Обновленные стили для схемы */
-.schema-canvas {
-  background: #16213e;
-  border-radius: 10px;
-  width: 100%;
-  height: auto;
-  cursor: pointer;
-}
 .schema-canvas g {
-  transition: all 0.3s;
   cursor: pointer;
-}
-.schema-canvas g:hover {
-  filter: brightness(1.1);
-  transform: scale(1.02);
 }
 /* Стили для поломки */
 .broken-status {
@@ -751,32 +731,13 @@ foreignObject {
   font-size: 0.8rem;
   margin-top: 0.25rem;
 }
-.notification-warning {
-  border-left: 4px solid #ed8936;
-  background-color: #fffaf0;
-  color: #c05621;
-}
-/* Анимация для уведомлений */
-@keyframes slideIn {
-  from { 
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to { 
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-.notification {
-  animation: slideIn 0.3s ease-out;
-}
 /* Стили для аутентификации */
 .auth-container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #c1b7fa;
   padding: 20px;
 }
 .auth-card {
@@ -837,28 +798,4 @@ foreignObject {
 .auth-switch-btn:hover {
   color: #5a67d8;
   text-decoration: underline;
-}
-.auth-demo {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: #f7fafc;
-  border-radius: 10px;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #4a5568;
-}
-.auth-demo p {
-  margin: 0.25rem 0;
-}
-.full-width {
-  width: 100%;
-}
-/* Обновленные стили для панели */
-.panel-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 1.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
