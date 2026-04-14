@@ -8,7 +8,6 @@ body {
   background: #c1b7fa;
   min-height: 100vh;
 }
-/* Двухпанельный макет */
 .home-container {
   display: flex;
   height: 100vh;
@@ -25,7 +24,7 @@ body {
 }
 .right-panel {
   flex: 1;
-  background: #1a1a2e;
+  background: #d2f9f2;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -118,7 +117,6 @@ body {
   align-items: center;
   gap: 0.25rem;
 }
-/* Панель информации */
 .info-panel {
   background: white;
   border-top: 2px solid #e2e8f0;
@@ -193,10 +191,9 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #AAF0D1;
 }
 .schema-canvas {
-  background: #AAF0D1;
+  background: #d2f9f2;
   border-radius: 10px;
   width: 100%;
   height: auto;
@@ -369,6 +366,8 @@ body {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
+  background: #c1b7fa;
+  min-height: 100vh;
 }
 .notification {
   position: fixed;
@@ -501,7 +500,6 @@ body {
 .status-active {
   color: #48bb78;
 }
-/* Температурный контрол */
 .temperature-control {
   background: white;
   border-radius: 10px;
@@ -544,6 +542,7 @@ body {
   cursor: pointer;
   transition: all 0.3s;
   font-size: 0.85rem;
+  color: #000;
 }
 .temp-btn:hover {
   background: #cbd5e0;
@@ -556,7 +555,6 @@ body {
 .temp-reset:hover {
   background: #5a67d8;
 }
-/* Список домов */
 .detail-houses {
   background: white;
   border-radius: 10px;
@@ -619,7 +617,6 @@ body {
   border-radius: 8px;
   object-fit: cover;
 }
-/* Визуализация трубы */
 .pipe-visualization {
   background: white;
   border-radius: 10px;
@@ -684,11 +681,9 @@ body {
   border: 3px solid #667eea;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-/* Стили для SVG foreignObject */
 foreignObject {
   pointer-events: bounding-box;
 }
-/* Обновленные стили для схемы */
 .schema-canvas g {
   cursor: pointer;
 }
@@ -818,8 +813,8 @@ foreignObject {
   animation: fadeIn 0.3s ease-out;
 }
 .modal-content h2 {
-  margin-bottom: 1.5rem;
   color: #2d3748;
+  margin-bottom: 1.5rem;
   text-align: center;
 }
 .modal-buttons {
